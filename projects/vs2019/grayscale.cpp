@@ -22,9 +22,16 @@
 
 cvar_t* v_posteffects;
 cvar_t* v_grayscale;
-//extern cvar_t* cv_specular_nocombiners;
+cvar_t* v_nocombiners;
+cvar_t* v_userects;
 
 PFNGLACTIVETEXTUREARBPROC glActiveTextureARB;
+
+PFNGLCOMBINERPARAMETERINVPROC glCombinerParameteriNV;
+PFNGLCOMBINERPARAMETERFVNVPROC glCombinerParameterfvNV;
+PFNGLCOMBINERINPUTNVPROC glCombinerInputNV;
+PFNGLCOMBINEROUTPUTNVPROC glCombinerOutputNV;
+PFNGLFINALCOMBINERINPUTNVPROC glFinalCombinerInputNV;
 
 float GetGrayscaleFactor()
 {
@@ -48,10 +55,7 @@ GLuint g_weights_texture = 0; // for cards with no register combiners support
 
 bool UseRectangleTextures()
 {
-	// when to use this?
-	// return false;
-
-	return true;
+	return v_userects->value > 0;
 }
 
 
@@ -135,8 +139,8 @@ void DrawQuad(int width, int height, int ofsX = 0, int ofsY = 0)
 
 void ApplyPostEffects()
 {
-//	if (!IsGLAllowed() || !v_posteffects->value)
-	//	return;
+	if (v_posteffects->value <= 0)
+		return;
 
 	float grayscale = GetGrayscaleFactor();
 	if (grayscale <= 0 || grayscale > 1)
@@ -162,8 +166,7 @@ void ApplyPostEffects()
 	//
 	// Setup grayscale shader
 	//
-#if 0
-	if (NV_combiners_supported && !cv_specular_nocombiners->value)
+	if (v_nocombiners->value <= 0)
 	{
 		// use combiners
 		GLfloat grayscale_weights[] = {0.320000, 0.590000, 0.090000, 0.000000};
@@ -205,7 +208,6 @@ void ApplyPostEffects()
 		glEnable(GL_REGISTER_COMBINERS_NV);
 	}
 	else
-#endif
 	{
 		// use env_dot3
 		MakeWeightsTexture();
@@ -284,13 +286,11 @@ void ApplyPostEffects()
 
 		glBindTexture(GL_TEXTURE_2D, oldbinding1);
 	}
-	#if 0
-	if (NV_combiners_supported && !cv_specular_nocombiners->value)
+	if (v_nocombiners->value <= 0)
 	{
 		glDisable(GL_REGISTER_COMBINERS_NV);
 	}
 	else
-	#endif
 	{
 		glActiveTextureARB(GL_TEXTURE1_ARB);
 		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, texenvmode2);
@@ -309,12 +309,18 @@ void ApplyPostEffects()
 		glDisable(GL_BLEND);
 }
 
-
-
 void InitPostEffects()
 {
 	glActiveTextureARB = (PFNGLACTIVETEXTUREARBPROC)SDL_GL_GetProcAddress("glActiveTextureARB");
 
-	v_posteffects = gEngfuncs.pfnRegisterVariable("gl_posteffects", "1", 0);
-	v_grayscale = gEngfuncs.pfnRegisterVariable("gl_grayscale", "0", 0);
+	glCombinerParameteriNV = (PFNGLCOMBINERPARAMETERINVPROC)SDL_GL_GetProcAddress("glCombinerParameteriNV");
+	glCombinerParameterfvNV = (PFNGLCOMBINERPARAMETERFVNVPROC)SDL_GL_GetProcAddress("glCombinerParameterfvNV");
+	glCombinerInputNV = (PFNGLCOMBINERINPUTNVPROC)SDL_GL_GetProcAddress("glCombinerInputNV");
+	glCombinerOutputNV = (PFNGLCOMBINEROUTPUTNVPROC)SDL_GL_GetProcAddress("glCombinerOutputNV");
+	glFinalCombinerInputNV = (PFNGLFINALCOMBINERINPUTNVPROC)SDL_GL_GetProcAddress("glFinalCombinerInputNV");
+
+	v_posteffects = gEngfuncs.pfnRegisterVariable("gl_posteffects", "1", FCVAR_ARCHIVE);
+	v_grayscale = gEngfuncs.pfnRegisterVariable("gl_grayscale", "0", FCVAR_ARCHIVE);
+	v_nocombiners = gEngfuncs.pfnRegisterVariable("gl_nocombiners", "0", FCVAR_ARCHIVE);
+	v_userects = gEngfuncs.pfnRegisterVariable("gl_grayscale_userects", "1", FCVAR_ARCHIVE);
 }
