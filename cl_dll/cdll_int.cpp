@@ -36,6 +36,9 @@
 #include "vgui_TeamFortressViewport.h"
 #include "filesystem_utils.h"
 
+void InitPostEffects();
+void ApplyPostEffects();
+
 extern bool g_ResetMousePosition;
 
 cl_enginefunc_t gEngfuncs;
@@ -174,6 +177,8 @@ void DLLEXPORT HUD_Init()
 	InitInput();
 	gHUD.Init();
 	Scheme_Init();
+
+	InitPostEffects();
 }
 
 
@@ -191,6 +196,8 @@ int DLLEXPORT HUD_Redraw(float time, int intermission)
 	//	RecClHudRedraw(time, intermission);
 
 	gHUD.Redraw(time, 0 != intermission);
+
+	ApplyPostEffects();
 
 	return 1;
 }

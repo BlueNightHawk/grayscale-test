@@ -606,6 +606,8 @@ public:
 	void AddHudElem(CHudBase* p);
 
 	float GetSensitivity();
+
+	float m_flDeadTime = 0.0f;
 };
 
 extern CHud gHUD;

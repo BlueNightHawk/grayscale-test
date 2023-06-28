@@ -19,7 +19,7 @@
   The Halflife hard coded "scripted sequence".
 
   I'm pretty sure all this code is obsolete
-
+  
 */
 
 #include "extdll.h"

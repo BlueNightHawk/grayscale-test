@@ -513,6 +513,8 @@ void CHud::VidInit()
 	m_TextMessage.VidInit();
 	m_StatusIcons.VidInit();
 	GetClientVoiceMgr()->VidInit();
+
+	m_flDeadTime = 0.0f;
 }
 
 bool CHud::MsgFunc_Logo(const char* pszName, int iSize, void* pbuf)
